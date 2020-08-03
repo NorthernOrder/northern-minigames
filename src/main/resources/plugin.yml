@@ -1,0 +1,46 @@
+name: Minigames
+version: 0.5.0
+main: io.github.northernorder.minigames.Minigames
+api-version: '1.16'
+load: POSTWORLD
+authors:
+  - djozoku
+description: Minigames for Northern Order's minigames server
+website: http://nrth.xyz
+commands:
+  create:
+    usage: /create
+    default: all
+    description: Create a new map for currently selected minigame
+  join:
+    usage: /join <team>
+    default: all
+    description: Join the next round of currently selected minigame
+  leave:
+    usage: /leave
+    default: all
+    description: Leave the next round of currently selected minigame
+  reset:
+    usage: /reset
+    default: all
+    description: Reset / stop the current game
+  save:
+    usage: /save [name]
+    default: all
+    description: Save the currently selected map
+  select:
+    usage: /select <minigame|map|spawn> <name>
+    default: all
+    description: Select a minigame, a map or return to spawn
+  set:
+    usage: /set <location>
+    default: all
+    description: Set a map location
+  start:
+    usage: /start
+    default: all
+    description: Start the next round of currently selected minigame
+  test:
+    usage: /test <feature>
+    default: all
+    description: Test features of a map
