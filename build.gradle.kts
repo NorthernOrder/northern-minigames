@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
     java
     kotlin("jvm") version "1.3.72"
@@ -26,7 +28,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT")
     // compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
     implementation(platform("com.fasterxml.jackson:jackson-bom:2.11.1"))
@@ -49,6 +51,12 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
+    }
+    processResources {
+        from(sourceSets.main.get().allSource.srcDirs) {
+            val tokens = mapOf("version" to version)
+            filter<ReplaceTokens>("tokens" to tokens)
+        }
     }
 }
 

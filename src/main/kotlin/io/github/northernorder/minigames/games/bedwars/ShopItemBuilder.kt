@@ -23,7 +23,7 @@ class ShopItemBuilder(material: Material, private val shop: ShopStatic) {
     }
 
     fun stack(size: Int): ShopItemBuilder {
-        item.add(if (size - 1 == 0) 1 else size - 1)
+        item.add((size - 1).coerceAtLeast(1))
         return this
     }
 

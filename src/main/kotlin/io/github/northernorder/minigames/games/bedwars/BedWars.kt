@@ -64,7 +64,12 @@ class BedWars : Minigame<GameMap, Player>("BedWars", GameMap::class) {
     override fun reset() {
         finals = 0
         setSpawners()
-        currentMap!!.teams.forEach { (_, team) -> team.reset() }
+        currentMap!!.teams.values.forEach { team -> team.reset() }
+        Minigames.runConsoleCommand("kill @e[type=item]")
+        players.values.forEach { player ->
+            player.mcPlayer.inventory.clear()
+            player.mcPlayer.enderChest.clear()
+        }
         players.clear()
         unregisterListeners()
     }
@@ -102,6 +107,7 @@ class BedWars : Minigame<GameMap, Player>("BedWars", GameMap::class) {
         val player = players[id] ?: return
         player.team.players.remove(player)
         players.remove(id)
+        player.mcPlayer.gameMode = GameMode.CREATIVE
         mcPlayer.sendMessage("You are no longer part of the next game")
     }
 
@@ -158,11 +164,11 @@ class BedWars : Minigame<GameMap, Player>("BedWars", GameMap::class) {
         currentMap!!.spawners.forEach { (name, location) ->
             spawners.add(Spawner(location.toBukkit(), Money.fromName(name.slice(0 until name.length - 1))!!, this))
         }
-        currentMap!!.teams.values.forEach { t ->
-            t.spawner ?: return@forEach
-            spawners.add(Spawner(t.spawner!!.toBukkit(), Money.IRON, this, t))
-            spawners.add(Spawner(t.spawner!!.toBukkit(), Money.GOLD, this, t))
-            spawners.add(Spawner(t.spawner!!.toBukkit(), Money.EMERALD, this, t))
+        currentMap!!.teams.values.forEach { team ->
+            team.spawner ?: return@forEach
+            spawners.add(Spawner(team.spawner!!.toBukkit(), Money.IRON, this, team))
+            spawners.add(Spawner(team.spawner!!.toBukkit(), Money.GOLD, this, team))
+            spawners.add(Spawner(team.spawner!!.toBukkit(), Money.EMERALD, this, team))
         }
     }
 
@@ -187,27 +193,20 @@ class BedWars : Minigame<GameMap, Player>("BedWars", GameMap::class) {
     }
 
     @EventHandler
-    fun onBlockBreak(e: BlockBreakEvent) {
-        val block = e.block
+    fun onBlockBreak(event: BlockBreakEvent) {
+        val block = event.block
+        if (players[event.player.uniqueId]?.dead == true) return
 
-        if (!breakables.any { t -> t == block.type }) {
-            e.isCancelled = true
+        if (!breakables.any { type -> type == block.type }) {
+            event.isCancelled = true
             return
         }
 
-        var colorOfBed: Color? = null
-        for (color in Color.values()) {
-            if (block.type == color.bed) {
-                colorOfBed = color
-                break
-            }
-        }
+        val colorOfBed = Color.values().find { color -> color.bed == block.type } ?: return
 
-        if (colorOfBed == null) return
-
-        players.forEach { (_, player) ->
+        players.values.forEach { player ->
             if (player.team.color == colorOfBed) {
-                val destroyer = e.player
+                val destroyer = event.player
                 Bukkit.broadcastMessage("${TextUtils.toTitleCase(player.team.color.name)} team's bed has been destroyed by ${destroyer.name}!")
                 val destroyerData: Player = players[destroyer.uniqueId] ?: return@forEach
                 destroyerData.bedsBroken++
@@ -218,10 +217,10 @@ class BedWars : Minigame<GameMap, Player>("BedWars", GameMap::class) {
     }
 
     @EventHandler
-    fun onKilled(e: PlayerDeathEvent) {
-        val killed = e.entity
-        val inv = killed.inventory
-        val killedPlayer: Player = players[killed.uniqueId] ?: return
+    fun onKilled(event: PlayerDeathEvent) {
+        val killed = event.entity
+        val killedPlayer = players[killed.uniqueId] ?: return
+        if (killedPlayer.dead) return
         val killer = killed.killer
         if (killer == null) {
             if (killedPlayer.team.bedBroken) {
@@ -229,7 +228,7 @@ class BedWars : Minigame<GameMap, Player>("BedWars", GameMap::class) {
                 finals++
             }
         } else {
-            val contents = inv.contents
+            val contents = killed.inventory.contents
             for (item in contents) {
                 if (item == null) continue
                 val type = item.type
@@ -248,7 +247,8 @@ class BedWars : Minigame<GameMap, Player>("BedWars", GameMap::class) {
             killerPlayer.kills++
             killerPlayer.team.kills++
         }
-        inv.clear()
+        killed.inventory.clear()
+        killed.spigot().respawn()
         if (finals == players.size - 1) {
             endOfGame()
         }

@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack
 
 class Spawner(var location: Location, var type: Money, private var game: BedWars, private var team: Team? = null) :
     Runnable {
-    private var time: Int = 2
+    private var time = 2
     private var tier = 1
     private var runs = 0
 
@@ -36,14 +36,14 @@ class Spawner(var location: Location, var type: Money, private var game: BedWars
             Money.EMERALD -> Material.EMERALD
             Money.DIAMOND -> Material.DIAMOND
         }
-        game.world.dropItemNaturally(location, ItemStack(material))
+        game.world.dropItem(location, ItemStack(material))
     }
 
     private fun setTier() {
         if (tier == 3) return
         when (type) {
             Money.DIAMOND -> {
-                if (tier == 1 && runs == 5) {
+                if (tier == 1 && runs == 10) {
                     tier++
                 } else if (tier == 2 && runs == 45) {
                     tier++
@@ -71,9 +71,9 @@ class Spawner(var location: Location, var type: Money, private var game: BedWars
 
     private fun setTeamTime() {
         time = when (type) {
-            Money.IRON -> calculateTime(20, team!!.upgrades.forge)
-            Money.GOLD -> calculateTime(100, team!!.upgrades.forge)
-            Money.EMERALD -> calculateTime(1200, team!!.upgrades.forge)
+            Money.IRON -> calculateTime((20 * 0.5).toInt(), team!!.upgrades.forge)
+            Money.GOLD -> calculateTime(20 * 10, team!!.upgrades.forge)
+            Money.EMERALD -> calculateTime(20 * 60, team!!.upgrades.forge)
             else -> 2
         }
     }

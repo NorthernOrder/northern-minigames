@@ -1,5 +1,5 @@
 name: Minigames
-version: 0.5.0
+version: @version@
 main: io.github.northernorder.minigames.Minigames
 api-version: '1.16'
 load: POSTWORLD

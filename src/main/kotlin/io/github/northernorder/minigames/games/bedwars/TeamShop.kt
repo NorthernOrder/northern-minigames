@@ -133,7 +133,7 @@ class TeamShop(private val team: Team) : Shop("Upgrade Shop") {
             return
         }
         if (itemStack.amount != protection + 1) {
-            itemStack.add()
+            itemStack.amount = protection + 1
         }
     }
 
@@ -144,7 +144,7 @@ class TeamShop(private val team: Team) : Shop("Upgrade Shop") {
             return
         }
         if (itemStack.amount != forge + 1) {
-            itemStack.add()
+            itemStack.amount = forge + 1
         }
     }
 }
